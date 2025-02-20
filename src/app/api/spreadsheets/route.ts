@@ -4,18 +4,31 @@ import { NextResponse } from 'next/server';
 const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || 'FOLDER_ID';
 
 async function getAuthClient() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: {
-      client_email: process.env.GOOGLE_CLIENT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    },
-    scopes: [
-      'https://www.googleapis.com/auth/drive.readonly',
-      'https://www.googleapis.com/auth/spreadsheets.readonly',
-    ],
-  });
+  try {
+    console.log('Client Email:', process.env.GOOGLE_CLIENT_EMAIL);
+    console.log('Folder ID:', process.env.GOOGLE_DRIVE_FOLDER_ID);
+    // Log first and last few characters of private key to verify it's present
+    const pk = process.env.GOOGLE_PRIVATE_KEY || '';
+    console.log('Private Key Length:', pk.length);
+    console.log('Private Key Start:', pk.substring(0, 50));
+    console.log('Private Key End:', pk.substring(pk.length - 50));
 
-  return auth;
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      },
+      scopes: [
+        'https://www.googleapis.com/auth/drive.readonly',
+        'https://www.googleapis.com/auth/spreadsheets.readonly',
+      ],
+    });
+
+    return auth;
+  } catch (error) {
+    console.error('Auth Error:', error);
+    throw error;
+  }
 }
 
 export async function GET() {
@@ -35,6 +48,10 @@ export async function GET() {
     })));
   } catch (error) {
     console.error('Error fetching spreadsheets:', error);
-    return NextResponse.json({ error: 'Failed to fetch spreadsheets' }, { status: 500 });
+    // Return more detailed error information
+    return NextResponse.json({ 
+      error: 'Failed to fetch spreadsheets',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 } 

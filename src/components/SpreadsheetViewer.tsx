@@ -99,6 +99,15 @@ const LoadingSpinner = styled.div`
   }
 `;
 
+const ErrorMessage = styled.div`
+  color: #ff4444;
+  background: #ffe6e6;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border: 1px solid #ffcccc;
+`;
+
 interface SpreadsheetInfo {
   id: string;
   name: string;
@@ -129,6 +138,7 @@ const SpreadsheetViewer: React.FC = () => {
   const [selectedSheet, setSelectedSheet] = useState<string>('');
   const [data, setData] = useState<SpreadsheetData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     fetchSpreadsheets();
@@ -136,23 +146,34 @@ const SpreadsheetViewer: React.FC = () => {
 
   const fetchSpreadsheets = async () => {
     try {
+      setError('');
       const response = await fetch('/api/spreadsheets');
       const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.details || data.error);
+      }
+      
       setSpreadsheets(data);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching spreadsheets:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch spreadsheets');
+    } finally {
       setLoading(false);
     }
   };
 
   const fetchData = async (sheetId: string) => {
     setLoading(true);
+    setError('');
     try {
       const response = await fetch(`/api/spreadsheet-data?id=${sheetId}`);
       const rawData = await response.json();
       
-      // Process the data to get store names, keywords and success metrics
+      if (rawData.error) {
+        throw new Error(rawData.details || rawData.error);
+      }
+
       const processedData = rawData.map((row: RawSpreadsheetData) => {
         const storeName = row['Store Name'].split('-')[0].trim();
         return {
@@ -169,6 +190,7 @@ const SpreadsheetViewer: React.FC = () => {
       setData(processedData);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch spreadsheet data');
     } finally {
       setLoading(false);
     }
@@ -194,6 +216,8 @@ const SpreadsheetViewer: React.FC = () => {
           </option>
         ))}
       </Select>
+
+      {error && <ErrorMessage>{error}</ErrorMessage>}
 
       {loading ? (
         <LoadingSpinner />
