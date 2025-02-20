@@ -223,7 +223,7 @@ const SpreadsheetViewer: React.FC = () => {
   return (
     <Container>
       <Select value={selectedSheet} onChange={handleSpreadsheetChange}>
-        <option value="">스프레드시트 선택</option>
+        <option value="">날짜 선택</option>
         {spreadsheets.map((sheet) => (
           <option key={sheet.id} value={sheet.id}>
             {formatSpreadsheetName(sheet.name)}
