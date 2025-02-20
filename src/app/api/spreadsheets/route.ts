@@ -3,6 +3,11 @@ import { NextResponse } from 'next/server';
 
 const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || '';
 
+function extractDateFromFilename(filename: string): Date | null {
+  const match = filename.match(/(\d{4}-\d{2}-\d{2})/);
+  return match ? new Date(match[1]) : null;
+}
+
 async function getAuthClient() {
   try {
     // Remove any extra quotes from the environment variables
@@ -54,12 +59,26 @@ export async function GET() {
     const response = await drive.files.list({
       q: `'${FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.spreadsheet'`,
       fields: 'files(id, name)',
+      orderBy: 'name desc'
     });
 
     const files = response.data.files || [];
     console.log('Found spreadsheets:', files.length);
 
-    return NextResponse.json(files.map(file => ({
+    // Sort files by date in filename
+    const sortedFiles = files
+      .map(file => ({
+        id: file.id,
+        name: file.name || '',
+        date: extractDateFromFilename(file.name || '')
+      }))
+      .filter(file => file.date !== null)
+      .sort((a, b) => {
+        if (!a.date || !b.date) return 0;
+        return b.date.getTime() - a.date.getTime(); // Sort in descending order (newest first)
+      });
+
+    return NextResponse.json(sortedFiles.map(file => ({
       id: file.id,
       name: file.name,
     })));

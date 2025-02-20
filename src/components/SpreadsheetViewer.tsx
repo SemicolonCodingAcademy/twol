@@ -133,6 +133,20 @@ interface SpreadsheetData {
   feed_success: number;
 }
 
+function formatSpreadsheetName(name: string): string {
+  const dateMatch = name.match(/(\d{4}-\d{2}-\d{2})/);
+  if (!dateMatch) return name;
+
+  const date = new Date(dateMatch[1]);
+  const formattedDate = date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  return `${formattedDate} ${name.replace(dateMatch[1], '').trim()}`;
+}
+
 const SpreadsheetViewer: React.FC = () => {
   const [spreadsheets, setSpreadsheets] = useState<SpreadsheetInfo[]>([]);
   const [selectedSheet, setSelectedSheet] = useState<string>('');
@@ -209,10 +223,10 @@ const SpreadsheetViewer: React.FC = () => {
   return (
     <Container>
       <Select value={selectedSheet} onChange={handleSpreadsheetChange}>
-        <option value="">Select a spreadsheet</option>
+        <option value="">스프레드시트 선택</option>
         {spreadsheets.map((sheet) => (
           <option key={sheet.id} value={sheet.id}>
-            {sheet.name}
+            {formatSpreadsheetName(sheet.name)}
           </option>
         ))}
       </Select>
