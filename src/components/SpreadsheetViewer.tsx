@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { API_ENDPOINTS } from '../config/api';
 
 const Container = styled.div`
   max-width: 1200px;
@@ -148,7 +147,7 @@ const SpreadsheetViewer: React.FC = () => {
   const fetchSpreadsheets = async () => {
     try {
       setError('');
-      const response = await fetch(API_ENDPOINTS.spreadsheets);
+      const response = await fetch('/api/spreadsheets');
       const data = await response.json();
       
       if (data.error) {
@@ -168,7 +167,7 @@ const SpreadsheetViewer: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(API_ENDPOINTS.spreadsheetData(sheetId));
+      const response = await fetch(`/api/spreadsheet-data?id=${sheetId}`);
       const rawData = await response.json();
       
       if (rawData.error) {
