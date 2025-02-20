@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
 
-const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || 'FOLDER_ID';
+const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || '';
 
 async function getAuthClient() {
   try {
@@ -13,9 +13,11 @@ async function getAuthClient() {
     console.log('Auth Debug Info:');
     console.log('Client Email present:', !!clientEmail);
     console.log('Private Key present:', !!privateKey);
-    console.log('Private Key starts with:', privateKey?.substring(0, 27));
-    console.log('Private Key ends with:', privateKey?.substring(privateKey.length - 25));
-    console.log('Folder ID:', process.env.GOOGLE_DRIVE_FOLDER_ID);
+    console.log('Folder ID:', FOLDER_ID);
+    if (privateKey) {
+      console.log('Private Key starts with:', privateKey.substring(0, 27));
+      console.log('Private Key ends with:', privateKey.substring(privateKey.length - 25));
+    }
 
     if (!clientEmail || !privateKey) {
       throw new Error('Missing required credentials');
@@ -41,22 +43,28 @@ async function getAuthClient() {
 
 export async function GET() {
   try {
+    if (!FOLDER_ID) {
+      throw new Error('GOOGLE_DRIVE_FOLDER_ID is not set');
+    }
+
     const auth = await getAuthClient();
     const drive = google.drive({ version: 'v3', auth });
 
+    console.log('Fetching spreadsheets from folder:', FOLDER_ID);
     const response = await drive.files.list({
       q: `'${FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.spreadsheet'`,
       fields: 'files(id, name)',
     });
 
     const files = response.data.files || [];
+    console.log('Found spreadsheets:', files.length);
+
     return NextResponse.json(files.map(file => ({
       id: file.id,
       name: file.name,
     })));
   } catch (error) {
     console.error('Error fetching spreadsheets:', error);
-    // Return more detailed error information
     return NextResponse.json({ 
       error: 'Failed to fetch spreadsheets',
       details: error instanceof Error ? error.message : String(error)
