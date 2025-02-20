@@ -5,18 +5,26 @@ const FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || 'FOLDER_ID';
 
 async function getAuthClient() {
   try {
-    console.log('Client Email:', process.env.GOOGLE_CLIENT_EMAIL);
+    // Remove any extra quotes from the environment variables
+    const clientEmail = process.env.GOOGLE_CLIENT_EMAIL?.replace(/^["']|["']$/g, '');
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/^["']|["']$/g, '')
+      .replace(/\\n/g, '\n');
+
+    console.log('Auth Debug Info:');
+    console.log('Client Email present:', !!clientEmail);
+    console.log('Private Key present:', !!privateKey);
+    console.log('Private Key starts with:', privateKey?.substring(0, 27));
+    console.log('Private Key ends with:', privateKey?.substring(privateKey.length - 25));
     console.log('Folder ID:', process.env.GOOGLE_DRIVE_FOLDER_ID);
-    // Log first and last few characters of private key to verify it's present
-    const pk = process.env.GOOGLE_PRIVATE_KEY || '';
-    console.log('Private Key Length:', pk.length);
-    console.log('Private Key Start:', pk.substring(0, 50));
-    console.log('Private Key End:', pk.substring(pk.length - 50));
+
+    if (!clientEmail || !privateKey) {
+      throw new Error('Missing required credentials');
+    }
 
     const auth = new google.auth.GoogleAuth({
       credentials: {
-        client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        client_email: clientEmail,
+        private_key: privateKey,
       },
       scopes: [
         'https://www.googleapis.com/auth/drive.readonly',
