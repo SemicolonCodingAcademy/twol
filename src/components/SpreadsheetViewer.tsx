@@ -241,11 +241,11 @@ const SpreadsheetViewer: React.FC = () => {
             <tr>
               <Th>Store Name</Th>
               <Th>Keyword</Th>
-              <Th>Scroll Success</Th>
-              <Th>Alarm Success</Th>
-              <Th>Save Place Success</Th>
-              <Th>Save Keep Success</Th>
-              <Th>Feed Success</Th>
+              <Th>Scroll</Th>
+              <Th>Alarm</Th>
+              <Th>Save Place</Th>
+              <Th>Save Keep</Th>
+              <Th>Feed</Th>
             </tr>
           </thead>
           <tbody>
