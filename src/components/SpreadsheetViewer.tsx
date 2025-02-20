@@ -147,7 +147,8 @@ const SpreadsheetViewer: React.FC = () => {
   const fetchSpreadsheets = async () => {
     try {
       setError('');
-      const response = await fetch('/api/spreadsheets');
+      const basePath = process.env.NODE_ENV === 'production' ? '/twol' : '';
+      const response = await fetch(`${basePath}/api/spreadsheets`);
       const data = await response.json();
       
       if (data.error) {
@@ -167,7 +168,8 @@ const SpreadsheetViewer: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`/api/spreadsheet-data?id=${sheetId}`);
+      const basePath = process.env.NODE_ENV === 'production' ? '/twol' : '';
+      const response = await fetch(`${basePath}/api/spreadsheet-data?id=${sheetId}`);
       const rawData = await response.json();
       
       if (rawData.error) {

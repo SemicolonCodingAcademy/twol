@@ -5,7 +5,7 @@ const nextConfig = {
     unoptimized: true,
   },
   basePath: process.env.NODE_ENV === 'production' ? '/twol' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/twol/' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/twol' : '',
   trailingSlash: true,
 };
 
